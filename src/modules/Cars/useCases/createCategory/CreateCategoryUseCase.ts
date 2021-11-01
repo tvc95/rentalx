@@ -1,3 +1,5 @@
+import { inject, injectable } from "tsyringe";
+
 import { ICategoriesRepository } from "../../repositories/Categories/ICategoriesRepository";
 
 interface IRequest {
@@ -7,12 +9,12 @@ interface IRequest {
 /**
  * Aplicação do Single Responsibility Principle (SOLID)
  */
+@injectable()
 class CreateCategoryUseCase {
-  private categoriesRepository: ICategoriesRepository;
-
-  constructor(categoriesRepository: ICategoriesRepository) {
-    this.categoriesRepository = categoriesRepository;
-  }
+  constructor(
+    @inject("CategoriesRepository")
+    private categoriesRepository: ICategoriesRepository
+  ) {}
 
   async execute({ name, description }: IRequest) {
     const categoryAlreadyExists = await this.categoriesRepository.findByName(
