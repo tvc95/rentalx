@@ -2,6 +2,7 @@ import { compare } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { inject, injectable } from "tsyringe";
 
+import { AppError } from "../../../../errors/AppError";
 import { IUsersRepository } from "../../repositories/Users/IUsersRepository";
 
 interface IRequest {
@@ -30,14 +31,14 @@ class AuthenticateUserUseCase {
     const userAlreadyExists = await this.usersRepository.findByEmail(email);
 
     if (!userAlreadyExists) {
-      throw new Error("E-mail or password incorrect!");
+      throw new AppError("E-mail or password incorrect!");
     }
 
     // Decriptar a senha para identificar se o usuário colocou a senha corretamente
     const passwordMatch = await compare(password, userAlreadyExists.password);
 
     if (!passwordMatch) {
-      throw new Error("E-mail or password incorrect!");
+      throw new AppError("E-mail or password incorrect!");
     }
 
     // Gerar um token de autenticação, caso a senha esteja correta
