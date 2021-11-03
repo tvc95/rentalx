@@ -1,3 +1,4 @@
+import { hash } from "bcryptjs";
 import { inject, injectable } from "tsyringe";
 
 import { IUsersRepository } from "../../repositories/Users/IUsersRepository";
@@ -23,9 +24,11 @@ class CreateUserUseCase {
       throw new Error("This user is already registered");
     }
 
+    const passwordHash = await hash(password, 8);
+
     await this.usersRepository.create({
       name,
-      password,
+      password: passwordHash,
       email,
       driverLicense,
     });
