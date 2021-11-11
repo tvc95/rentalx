@@ -5,13 +5,13 @@ Backend code from Ch. 2 of Rocketseat's Ignite bootcamp (Node)
 ### Cadastro de carro
 **RF**
   - Deve ser possível cadastrar um novo carro [OK]
-  - Deve ser possível listar todas as categorias
+  <!-- - Deve ser possível listar todas as categorias -->
 
 **RN**
   - Não deve ser possível cadastrar um carro com uma placa já existente. [OK]
   - O carro deve ser cadastrado com disponibilidade por padrão. [OK]
-  - Não deve ser possível alterar a placa de um carro já cadastrado.
-  - O usuário responsável pelo cadastro deve ser um usuário administrador.
+  <!-- - Não deve ser possível alterar a placa de um carro já cadastrado. -->
+  - O usuário responsável pelo cadastro deve ser um usuário administrador. [OK]
 
 ### Listagem de carros
 **RF**
