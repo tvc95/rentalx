@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { inject, injectable } from "tsyringe";
 
+import { IDateProvider } from "../../../../shared/container/providers/DateProvider/IDateProvider";
 import { AppError } from "../../../../shared/errors/AppError";
 import { Rental } from "../../infra/typeorm/entities/Rental";
 import { IRentalsRepository } from "../../repositories/IRentalsRepository";
@@ -18,7 +19,8 @@ interface IRequest {
 class CreateRentalUseCase {
   constructor(
     @inject("RentalsRepository")
-    private rentalsRepository: IRentalsRepository
+    private rentalsRepository: IRentalsRepository,
+    private dateProvider: IDateProvider
   ) {}
 
   async execute({
@@ -27,6 +29,7 @@ class CreateRentalUseCase {
     userId,
   }: IRequest): Promise<Rental> {
     const minimumHours = 24;
+
     const carUnavailable = await this.rentalsRepository.findOpenRentalByCar(
       carId
     );
@@ -42,14 +45,12 @@ class CreateRentalUseCase {
       throw new AppError("There is a rental in progress for the user!");
     }
 
-    const expectedReturnDateFormat = dayjs(expectedReturnDate)
-      .utc()
-      .local()
-      .format();
+    const dateNow = this.dateProvider.dateNow();
 
-    const dateNow = dayjs().utc().local().format();
-
-    const compareDate = dayjs(expectedReturnDateFormat).diff(dateNow, "hours");
+    const compareDate = this.dateProvider.compareInHours(
+      dateNow,
+      expectedReturnDate
+    );
 
     if (compareDate < minimumHours) {
       throw new AppError(
