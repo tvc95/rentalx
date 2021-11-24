@@ -33,7 +33,7 @@ class Rental {
   @Column()
   userId: string;
 
-  @CreateDateColumn()
+  @Column()
   startDate: Date;
 
   @Column()
