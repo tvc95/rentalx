@@ -4,6 +4,13 @@ import utc from "dayjs/plugin/utc";
 import { IDateProvider } from "../IDateProvider";
 
 class DayjsDateProvider implements IDateProvider {
+  compareInDays(startDate: Date, endDate: Date): number {
+    const endDateUTC = this.convertToUTC(endDate);
+    const startDateUTC = this.convertToUTC(startDate);
+
+    return dayjs(endDateUTC).diff(startDateUTC, "days");
+  }
+
   compareInHours(startDate: Date, endDate: Date): number {
     const endDateUTC = this.convertToUTC(endDate);
     const startDateUTC = this.convertToUTC(startDate);
