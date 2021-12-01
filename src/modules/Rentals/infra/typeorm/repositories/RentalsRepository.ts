@@ -14,12 +14,16 @@ class RentalsRepository implements IRentalsRepository {
   }
 
   async findOpenRentalByCar(carId: string): Promise<Rental> {
-    const openByCar = await this.repository.findOne({ carId });
+    const openByCar = await this.repository.findOne({
+      where: { carId, endDate: null },
+    });
     return openByCar;
   }
 
   async findOpenRentalByUser(userId: string): Promise<Rental> {
-    const openByUser = await this.repository.findOne({ userId });
+    const openByUser = await this.repository.findOne({
+      where: { userId, endDate: null },
+    });
     return openByUser;
   }
 
@@ -27,11 +31,17 @@ class RentalsRepository implements IRentalsRepository {
     carId,
     expectedReturnDate,
     userId,
+    id,
+    endDate,
+    total,
   }: ICreateRentalDTO): Promise<Rental> {
     const rental = this.repository.create({
       carId,
       expectedReturnDate,
       userId,
+      id,
+      endDate,
+      total,
     });
 
     await this.repository.save(rental);
