@@ -2,8 +2,11 @@ import { compare } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { inject, injectable } from "tsyringe";
 
+import auth from "../../../../config/auth";
+import { IDateProvider } from "../../../../shared/container/providers/DateProvider/IDateProvider";
 import { AppError } from "../../../../shared/errors/AppError";
 import { IUsersRepository } from "../../repositories/Users/IUsersRepository";
+import { IUsersTokensRepository } from "../../repositories/Users/IUsersTokensRepository";
 
 interface IRequest {
   email: string;
@@ -17,18 +20,30 @@ interface IResponse {
     admin: boolean;
   };
   token: string;
+  refreshToken: string;
 }
 
 @injectable()
 class AuthenticateUserUseCase {
   constructor(
     @inject("UsersRepository")
-    private usersRepository: IUsersRepository
+    private usersRepository: IUsersRepository,
+    @inject("UsersTokensRepository")
+    private usersTokensRepository: IUsersTokensRepository,
+    @inject("DayjsDateProvider")
+    private dayjsDateProvider: IDateProvider
   ) {}
 
   async execute({ email, password }: IRequest): Promise<IResponse> {
     // Verificar se o usuário existe
     const userAlreadyExists = await this.usersRepository.findByEmail(email);
+    const {
+      expiresIn,
+      secretRefreshToken,
+      secretToken,
+      expiresInRefreshToken,
+      expiresRefreshTokenDays,
+    } = auth;
 
     if (!userAlreadyExists) {
       throw new AppError("E-mail or password incorrect!");
@@ -42,9 +57,24 @@ class AuthenticateUserUseCase {
     }
 
     // Gerar um token de autenticação, caso a senha esteja correta
-    const token = sign({}, "38558aa5db5cf08625bee50665c73760", {
+    const token = sign({}, secretToken, {
       subject: userAlreadyExists.id,
-      expiresIn: "1d",
+      expiresIn,
+    });
+
+    const refreshToken = sign({ email }, secretRefreshToken, {
+      subject: userAlreadyExists.id,
+      expiresIn: expiresInRefreshToken,
+    });
+
+    const refreshTokExpireDate = this.dayjsDateProvider.addDays(
+      expiresRefreshTokenDays
+    );
+
+    await this.usersTokensRepository.create({
+      expiresDate: refreshTokExpireDate,
+      refreshToken,
+      userId: userAlreadyExists.id,
     });
 
     return {
@@ -54,6 +84,7 @@ class AuthenticateUserUseCase {
         email: userAlreadyExists.email,
       },
       token,
+      refreshToken,
     };
   }
 }
